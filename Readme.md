@@ -105,3 +105,38 @@ The only constraint on the technological stack is to provide a docker image that
 We are looking for high quality code: typically something that you would put into production and be proud of.
 
 Have fun!
+
+## Running the API
+
+Install dependencies and build the TypeScript application:
+
+```sh
+npm install
+npm run build
+```
+
+Run the server:
+
+```sh
+npm start
+```
+
+Call the skeleton endpoint:
+
+```sh
+curl -X POST http://localhost:3000/compute \
+  -H 'Content-Type: application/json' \
+  -d '{"arrival":"Endor"}'
+```
+
+Run the verification command:
+
+```sh
+npm test
+```
+
+Build the Docker image:
+
+```sh
+docker build -t animaj-technical-test .
+```
