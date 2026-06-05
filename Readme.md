@@ -118,10 +118,10 @@ npm run build
 Run the server:
 
 ```sh
-npm start
+FALCON_CONFIG=example/millennium-falcon.json npm start
 ```
 
-The database connection is configured through `DATABASE_PATH` and defaults to `example/universe.db`.
+The application reads its startup configuration from `FALCON_CONFIG` and resolves `routes_db` relative to that JSON file.
 
 Call the skeleton endpoint:
 

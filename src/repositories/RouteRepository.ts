@@ -1,10 +1,11 @@
-import type { Repository } from "typeorm";
-import { appDataSource } from "../data-source.js";
+import type { DataSource, Repository } from "typeorm";
 import { RouteEntity } from "../database-entities/RouteEntity.js";
 
 export class RouteRepository {
+  constructor(private readonly dataSource: DataSource) {}
+
   private get repository(): Repository<RouteEntity> {
-    return appDataSource.getRepository(RouteEntity);
+    return this.dataSource.getRepository(RouteEntity);
   }
 
   async findAll(): Promise<RouteEntity[]> {
