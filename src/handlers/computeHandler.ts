@@ -18,9 +18,13 @@ export function createComputeHandler(pathEvaluationService: PathEvaluationServic
       return;
     }
 
-    const pathEvaluation = await pathEvaluationService.evaluate(request.body.arrival);
-
-    response.status(200).json(pathEvaluation);
+    try {
+      const pathEvaluation = await pathEvaluationService.evaluate(request.body.arrival);
+      response.status(200).json(pathEvaluation);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unable to compute route.";
+      response.status(404).json({ error: message });
+    }
   };
 }
 
