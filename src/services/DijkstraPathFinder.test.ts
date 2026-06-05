@@ -169,7 +169,7 @@ test("DijkstraPathFinder keeps distinct states for the same planet with differen
   });
 });
 
-test("DijkstraPathFinder chooses the cheaper option between refueling and a detour", () => {
+test("DijkstraPathFinder chooses the lower total duration route between a direct path and a longer alternate path", () => {
   const graph = UniverseGraph.fromRoutes([
     { origin: "Tatooine", destination: "Hoth", travelTime: 4 } as never,
     { origin: "Hoth", destination: "Endor", travelTime: 4 } as never,
