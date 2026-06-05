@@ -1,6 +1,7 @@
 import type { AppConfig } from "../config/loadAppConfig.js";
 import { RouteRepository } from "../repositories/RouteRepository.js";
 import type { ComputeSuccessResponse } from "../handlers/computeTypes.js";
+import { UniverseGraph } from "../domaine-entities/UniverseGraph.js";
 
 type PathEvaluationConfig = Pick<AppConfig, "autonomy" | "departure">;
 
@@ -11,7 +12,10 @@ export class PathEvaluationService {
   ) {}
 
   async evaluate(arrival: string): Promise<ComputeSuccessResponse> {
-    await this.routeRepository.findAll();
+    const routes = await this.routeRepository.findAll();
+    const universeGraph = UniverseGraph.fromRoutes(routes);
+    const departureNode = universeGraph.getNode(this.config.departure);
+    const arrivalNode = universeGraph.getNode(arrival);
 
     if (arrival === this.config.departure) {
       return {
@@ -20,9 +24,16 @@ export class PathEvaluationService {
       };
     }
 
+    if (!departureNode || !arrivalNode) {
+      return {
+        duration: 0,
+        route: [this.config.departure, arrival],
+      };
+    }
+
     return {
       duration: 0,
-      route: [this.config.departure, arrival],
+      route: [departureNode.name, arrivalNode.name],
     };
   }
 }
