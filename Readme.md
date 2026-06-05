@@ -1,5 +1,11 @@
 # Software Eng Technical Test
 
+## Documentation
+
+- [GettingStarted.md](./GettingStarted.md)
+- [Architecture.md](./Architecture.md)
+- [Simulation.md](./Simulation.md)
+
 ## What are the odds?
 
 The Death Star - the Empire's ultimate weapon - is almost operational and is currently approaching the Endor planet. The countdown has started.
@@ -105,12 +111,3 @@ The only constraint on the technological stack is to provide a docker image that
 We are looking for high quality code: typically something that you would put into production and be proud of.
 
 Have fun!
-
-## Getting Started
-
-See [GettingStarted.md](/Users/sohaibhaddad/Documents/coding-projects/Animaj/technical_test%20(Souhaib-Animaj)%20/GettingStarted.md) for:
-
-- running the API without Docker
-- running the API with Docker
-- calling `/compute`
-- running the test suite
