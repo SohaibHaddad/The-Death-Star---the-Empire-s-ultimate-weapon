@@ -1,6 +1,12 @@
 import express, { type Request, type Response } from "express";
+import { createComputeHandler } from "./handlers/computeHandler.js";
+import { PathEvaluationService } from "./services/PathEvaluationService.js";
 
-export function createApp() {
+type AppDependencies = {
+  pathEvaluationService: PathEvaluationService;
+};
+
+export function createApp({ pathEvaluationService }: AppDependencies) {
   const app = express();
   app.use(express.json());
 
@@ -8,9 +14,7 @@ export function createApp() {
     response.status(200).json({ status: "ok" });
   });
 
-  app.post("/compute", (_request: Request, response: Response) => {
-    response.sendStatus(200);
-  });
+  app.post("/compute", createComputeHandler(pathEvaluationService));
 
   return app;
 }
