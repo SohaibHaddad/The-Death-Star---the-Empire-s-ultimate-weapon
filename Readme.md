@@ -121,6 +121,8 @@ Run the server:
 npm start
 ```
 
+The database connection is configured through `DATABASE_PATH` and defaults to `example/universe.db`.
+
 Call the skeleton endpoint:
 
 ```sh
