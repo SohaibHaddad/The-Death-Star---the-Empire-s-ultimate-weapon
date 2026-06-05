@@ -14,16 +14,50 @@ async function main() {
 
   await appDataSource.initialize();
 
-  const routeRepository = new RouteRepository(appDataSource);
-  const pathEvaluationService = new PathEvaluationService(appConfig, routeRepository);
-  const app = createApp({ pathEvaluationService });
+  try {
+    const routeRepository = new RouteRepository(appDataSource);
+    const pathEvaluationService = await PathEvaluationService.create(appConfig, routeRepository);
+    const app = createApp({ pathEvaluationService });
+    const server = await startServer(app);
 
-  app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
-  });
+    const shutdown = async () => {
+      server.close(async (closeError) => {
+        try {
+          await appDataSource.destroy();
+        } finally {
+          if (closeError) {
+            console.error(closeError);
+            process.exit(1);
+          }
+
+          process.exit(0);
+        }
+      });
+    };
+
+    process.once("SIGINT", shutdown);
+    process.once("SIGTERM", shutdown);
+  } catch (error: unknown) {
+    await appDataSource.destroy();
+    throw error;
+  }
 }
 
 main().catch((error: unknown) => {
   console.error(error);
   process.exit(1);
 });
+
+async function startServer(app: ReturnType<typeof createApp>) {
+  return await new Promise<ReturnType<typeof app.listen>>((resolve, reject) => {
+    const server = app.listen(port, () => {
+      console.log(`Server listening on port ${port}`);
+      resolve(server);
+    });
+
+    server.once("error", reject);
+    server.once("listening", () => {
+      server.removeListener("error", reject);
+    });
+  });
+}

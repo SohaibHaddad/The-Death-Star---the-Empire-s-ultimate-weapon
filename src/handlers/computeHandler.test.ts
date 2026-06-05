@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createComputeHandler } from "./computeHandler.js";
+import { RouteNotFoundError } from "../services/PathEvaluationService.js";
 
 function createResponseRecorder() {
   return {
@@ -54,7 +55,7 @@ test("compute handler returns 200 with evaluated path", async () => {
 test("compute handler returns 404 when evaluation fails", async () => {
   const handler = createComputeHandler({
     evaluate: async () => {
-      throw new Error("No route found from Tatooine to Endor.");
+      throw new RouteNotFoundError("No route found from Tatooine to Endor.");
     },
   } as never);
   const response = createResponseRecorder();
@@ -64,5 +65,21 @@ test("compute handler returns 404 when evaluation fails", async () => {
   assert.equal(response.statusCode, 404);
   assert.deepEqual(response.payload, {
     error: "No route found from Tatooine to Endor.",
+  });
+});
+
+test("compute handler returns 500 for unexpected evaluation failures", async () => {
+  const handler = createComputeHandler({
+    evaluate: async () => {
+      throw new Error("database unavailable");
+    },
+  } as never);
+  const response = createResponseRecorder();
+
+  await handler({ body: { arrival: "Endor" } } as never, response as never);
+
+  assert.equal(response.statusCode, 500);
+  assert.deepEqual(response.payload, {
+    error: "Unable to compute route.",
   });
 });

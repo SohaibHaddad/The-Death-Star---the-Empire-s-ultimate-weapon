@@ -3,6 +3,7 @@ import { EventEmitter } from "node:events";
 import test from "node:test";
 import httpMocks from "node-mocks-http";
 import { createApp } from "./app.js";
+import { RouteNotFoundError } from "./services/PathEvaluationService.js";
 
 test("createApp serves health and compute endpoints", async () => {
   const app = createApp({
@@ -46,6 +47,38 @@ test("createApp serves health and compute endpoints", async () => {
   assert.deepEqual(computeResponse._getJSONData(), {
     duration: 8,
     route: ["Tatooine", "Endor"],
+  });
+});
+
+test("createApp returns 404 for missing routes", async () => {
+  const app = createApp({
+    pathEvaluationService: {
+      evaluate: async () => {
+        throw new RouteNotFoundError("No route found from Tatooine to Endor.");
+      },
+    } as never,
+  });
+  const appHandler = app as unknown as {
+    handle: (request: unknown, response: unknown) => void;
+  };
+
+  const request = httpMocks.createRequest({
+    method: "POST",
+    url: "/compute",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: {
+      arrival: "Endor",
+    },
+  });
+  const response = httpMocks.createResponse({ eventEmitter: EventEmitter });
+  appHandler.handle(request, response);
+  await waitForNextTick();
+
+  assert.equal(response.statusCode, 404);
+  assert.deepEqual(response._getJSONData(), {
+    error: "No route found from Tatooine to Endor.",
   });
 });
 

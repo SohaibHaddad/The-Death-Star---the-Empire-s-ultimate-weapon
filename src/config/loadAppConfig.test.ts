@@ -45,3 +45,53 @@ test("loadAppConfig rejects invalid autonomy", async () => {
     /Configuration field 'autonomy' must be a positive integer\./,
   );
 });
+
+test("loadAppConfig rejects invalid departure", async () => {
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "falcon-config-"));
+  const configPath = path.join(tempDir, "millennium-falcon.json");
+
+  await writeFile(
+    configPath,
+    JSON.stringify({
+      autonomy: 6,
+      departure: "",
+      routes_db: "universe.db",
+    }),
+  );
+
+  await assert.rejects(
+    () => loadAppConfig(configPath),
+    /Configuration field 'departure' must be a non-empty string\./,
+  );
+});
+
+test("loadAppConfig rejects invalid routes_db", async () => {
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "falcon-config-"));
+  const configPath = path.join(tempDir, "millennium-falcon.json");
+
+  await writeFile(
+    configPath,
+    JSON.stringify({
+      autonomy: 6,
+      departure: "Tatooine",
+      routes_db: "",
+    }),
+  );
+
+  await assert.rejects(
+    () => loadAppConfig(configPath),
+    /Configuration field 'routes_db' must be a non-empty string\./,
+  );
+});
+
+test("loadAppConfig rejects non-object JSON", async () => {
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "falcon-config-"));
+  const configPath = path.join(tempDir, "millennium-falcon.json");
+
+  await writeFile(configPath, JSON.stringify([]));
+
+  await assert.rejects(
+    () => loadAppConfig(configPath),
+    /Configuration file must contain a JSON object\./,
+  );
+});

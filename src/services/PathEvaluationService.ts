@@ -6,17 +6,37 @@ import { DijkstraPathFinder } from "./DijkstraPathFinder.js";
 
 type PathEvaluationConfig = Pick<AppConfig, "autonomy" | "departure">;
 
+export class RouteNotFoundError extends Error {}
+
 export class PathEvaluationService {
-  constructor(
+  private constructor(
     private readonly config: PathEvaluationConfig,
-    private readonly routeRepository: RouteRepository,
+    private readonly universeGraph: UniverseGraph,
   ) {}
 
-  async evaluate(arrival: string): Promise<ComputeSuccessResponse> {
-    const routes = await this.routeRepository.findAll();
+  // This factory loads routes once up front so callers can reuse the service
+  // without reloading the route set on every evaluation.
+  static async create(
+    config: PathEvaluationConfig,
+    routeRepository: RouteRepository,
+  ): Promise<PathEvaluationService> {
+    const routes = await routeRepository.findAll();
     const universeGraph = UniverseGraph.fromRoutes(routes);
-    const pathFinder = new DijkstraPathFinder(universeGraph, this.config);
 
-    return pathFinder.findShortestPath(arrival);
+    return new PathEvaluationService(config, universeGraph);
+  }
+
+  async evaluate(arrival: string): Promise<ComputeSuccessResponse> {
+    const pathFinder = new DijkstraPathFinder(this.universeGraph, this.config);
+
+    try {
+      return pathFinder.findShortestPath(arrival);
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.startsWith("No route found")) {
+        throw new RouteNotFoundError(error.message);
+      }
+
+      throw error;
+    }
   }
 }

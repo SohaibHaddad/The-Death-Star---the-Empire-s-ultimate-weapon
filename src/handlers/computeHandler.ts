@@ -1,5 +1,8 @@
 import type { Request, Response } from "express";
-import { PathEvaluationService } from "../services/PathEvaluationService.js";
+import {
+  PathEvaluationService,
+  RouteNotFoundError,
+} from "../services/PathEvaluationService.js";
 import type {
   ComputeRequestBody,
   ComputeSuccessResponse,
@@ -22,8 +25,12 @@ export function createComputeHandler(pathEvaluationService: PathEvaluationServic
       const pathEvaluation = await pathEvaluationService.evaluate(request.body.arrival);
       response.status(200).json(pathEvaluation);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Unable to compute route.";
-      response.status(404).json({ error: message });
+      if (error instanceof RouteNotFoundError) {
+        response.status(404).json({ error: error.message });
+        return;
+      }
+
+      response.status(500).json({ error: "Unable to compute route." });
     }
   };
 }
